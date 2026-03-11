@@ -1,0 +1,11 @@
+[project]
+name = "ethnography-assistant"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "faster-whisper>=1.2.1",
+    "onnxruntime>=1.17,<1.20",
+    "pyaudio>=0.2.14",
+]
