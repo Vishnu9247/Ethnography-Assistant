@@ -1,4 +1,4 @@
-from audio_transcriber import record_audio, transcribe
+from audio_transcript.audio_transcriber import record_audio, transcribe
 
 audio_path = record_audio('./temp')
 
