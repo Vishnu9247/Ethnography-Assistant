@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ethnography Assistant</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Fraunces:ital,wght@0,300;0,600;1,300&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #f5f2ee;
+    --panel-bg: #faf8f5;
+    --sidebar-bg: #1c1c1e;
+    --sidebar-text: #e8e4de;
+    --sidebar-muted: #7a7570;
+    --accent: #c9a96e;
+    --accent-soft: rgba(201,169,110,0.12);
+    --user-bubble: #ffffff;
+    --ai-bubble: #ede8e0;
+    --border: rgba(0,0,0,0.08);
+    --shadow: 0 2px 16px rgba(0,0,0,0.06);
+    --radius: 14px;
+    --font-main: 'DM Sans', sans-serif;
+    --font-display: 'Fraunces', serif;
+  }
+
+  html, body {
+    height: 100%;
+    font-family: var(--font-main);
+    background: var(--bg);
+    color: #1c1c1e;
+  }
+
+  .app {
+    display: grid;
+    grid-template-columns: 20% 1fr 20%;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  /* ── LEFT SIDEBAR ── */
+  .sidebar {
+    background: var(--sidebar-bg);
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    overflow: hidden;
+    border-right: 1px solid rgba(255,255,255,0.06);
+  }
+
+  .sidebar-header {
+    padding: 24px 20px 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+  }
+
+  .sidebar-header h1 {
+    font-family: var(--font-display);
+    font-weight: 300;
+    font-size: 17px;
+    color: var(--sidebar-text);
+    letter-spacing: -0.3px;
+    line-height: 1.3;
+  }
+
+  .privacy-note {
+    display: flex;
+    align-items: flex-start;
+    gap: 7px;
+    font-size: 10px;
+    color: var(--sidebar-muted);
+    line-height: 1.5;
+    padding: 10px 12px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 8px;
+  }
+
+  .privacy-note svg {
+    flex-shrink: 0;
+    margin-top: 1px;
+    color: var(--accent);
+    opacity: 0.7;
+  }
+
+  .nav-section {
+    padding: 20px 14px 8px;
+  }
+
+  .nav-label {
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--sidebar-muted);
+    margin-bottom: 8px;
+    padding-left: 6px;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    color: var(--sidebar-muted);
+    font-size: 13px;
+    font-weight: 400;
+    margin-bottom: 2px;
+  }
+
+  .nav-item:hover {
+    background: rgba(255,255,255,0.06);
+    color: var(--sidebar-text);
+  }
+
+  .nav-item.active {
+    background: rgba(201,169,110,0.15);
+    color: var(--accent);
+  }
+
+  .nav-item svg {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+  }
+
+  .sidebar-footer {
+    margin-top: auto;
+    padding: 14px;
+    border-top: 1px solid rgba(255,255,255,0.07);
+  }
+
+  /* btn-new-session removed — stateless design */
+
+  /* ── CHAT PANEL ── */
+  .chat-panel {
+    display: flex;
+    flex-direction: column;
+    background: var(--panel-bg);
+    overflow: hidden;
+    border-right: 1px solid var(--border);
+  }
+
+  .chat-header {
+    padding: 18px 24px;
+    border-bottom: 1px solid var(--border);
+    background: var(--panel-bg);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .chat-header h2 {
+    font-family: var(--font-display);
+    font-weight: 300;
+    font-size: 20px;
+    color: #1c1c1e;
+    letter-spacing: -0.3px;
+  }
+
+  .status-dot {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    color: #888;
+  }
+
+  .status-dot::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    background: #4caf7d;
+    border-radius: 50%;
+    display: block;
+  }
+
+  .messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0,0,0,0.1) transparent;
+  }
+
+  .messages::-webkit-scrollbar { width: 4px; }
+  .messages::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 4px; }
+
+  .message { display: flex; flex-direction: column; max-width: 68%; }
+  .message.user { align-self: flex-end; align-items: flex-end; }
+  .message.ai { align-self: flex-start; align-items: flex-start; }
+
+  .message-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: #aaa;
+    margin-bottom: 5px;
+    padding: 0 4px;
+  }
+
+  .bubble {
+    padding: 12px 16px;
+    border-radius: 16px;
+    font-size: 13.5px;
+    line-height: 1.6;
+    font-weight: 400;
+  }
+
+  .message.user .bubble {
+    background: var(--user-bubble);
+    border: 1px solid var(--border);
+    border-bottom-right-radius: 4px;
+    box-shadow: var(--shadow);
+  }
+
+  .message.ai .bubble {
+    background: var(--ai-bubble);
+    border-bottom-left-radius: 4px;
+    border: 1px solid rgba(0,0,0,0.04);
+  }
+
+  .message.ai .bubble.highlight {
+    border: 1.5px solid var(--accent);
+    background: #fdf8f0;
+  }
+
+  .chat-input-area {
+    padding: 16px 20px 20px;
+    border-top: 1px solid var(--border);
+    background: var(--panel-bg);
+  }
+
+  .input-row {
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+  }
+
+  .input-field {
+    flex: 1;
+    padding: 11px 16px;
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    font-family: var(--font-main);
+    font-size: 13.5px;
+    background: #fff;
+    outline: none;
+    resize: none;
+    min-height: 44px;
+    max-height: 120px;
+    color: #1c1c1e;
+    transition: border-color 0.15s;
+  }
+
+  .input-field:focus { border-color: var(--accent); }
+  .input-field::placeholder { color: #bbb; }
+
+  .btn-send {
+    padding: 11px 20px;
+    background: #1c1c1e;
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    font-family: var(--font-main);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+
+  .btn-send:hover { background: #333; }
+
+  .btn-voice {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: transparent;
+    border: 1.5px solid var(--border);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #888;
+    transition: all 0.15s;
+  }
+
+  .btn-voice:hover { border-color: var(--accent); color: var(--accent); }
+
+  .action-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+  }
+
+  .btn-action {
+    padding: 7px 14px;
+    border-radius: 8px;
+    font-family: var(--font-main);
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+    border: 1.5px solid var(--border);
+    background: transparent;
+    color: #666;
+  }
+
+  .btn-action:hover { border-color: #999; color: #333; }
+
+  .btn-action.danger {
+    border-color: rgba(220,60,60,0.25);
+    color: #c94040;
+  }
+
+  .btn-action.danger:hover {
+    background: rgba(220,60,60,0.06);
+    border-color: #c94040;
+  }
+
+  /* ── RIGHT PANEL ── */
+  .summary-panel {
+    background: var(--panel-bg);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .summary-header {
+    padding: 18px 20px 14px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .summary-header h2 {
+    font-family: var(--font-display);
+    font-weight: 300;
+    font-size: 18px;
+    color: #1c1c1e;
+    letter-spacing: -0.3px;
+  }
+
+  /* Top options box */
+  .options-box {
+    margin: 16px 16px 0;
+    background: #fff;
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .options-box-header {
+    padding: 10px 14px;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #aaa;
+    border-bottom: 1px solid var(--border);
+    background: #fafafa;
+  }
+
+  .option-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    font-size: 12.5px;
+    color: #444;
+    cursor: pointer;
+    transition: background 0.12s;
+    border-bottom: 1px solid rgba(0,0,0,0.04);
+  }
+
+  .option-item:last-child { border-bottom: none; }
+  .option-item:hover { background: var(--accent-soft); }
+
+  .option-item svg {
+    width: 14px;
+    height: 14px;
+    color: var(--accent);
+    flex-shrink: 0;
+  }
+
+  /* Insights */
+  .insights-area {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0,0,0,0.08) transparent;
+  }
+
+  .insights-area::-webkit-scrollbar { width: 3px; }
+
+  .insight-section { margin-bottom: 20px; }
+
+  .insight-section h3 {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.9px;
+    color: #aaa;
+    margin-bottom: 10px;
+    font-weight: 500;
+  }
+
+  .insight-card {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 11px 13px;
+    font-size: 12.5px;
+    color: #444;
+    line-height: 1.5;
+    margin-bottom: 7px;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .insight-card::before {
+    content: '';
+    width: 5px;
+    height: 5px;
+    min-width: 5px;
+    background: var(--accent);
+    border-radius: 50%;
+    margin-top: 6px;
+  }
+
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 500;
+    margin: 3px 4px 3px 0;
+  }
+
+  .tag.reflective { background: #e8f4f1; color: #2e8b6e; }
+  .tag.stressed { background: #fdf0ed; color: #c05c3a; }
+  .tag.hopeful { background: #f0f3fd; color: #3a5cc0; }
+
+  .insight-input-area {
+    padding: 12px 16px 16px;
+    border-top: 1px solid var(--border);
+  }
+
+  .insight-input-row {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+  }
+
+  .insight-field {
+    flex: 1;
+    padding: 9px 13px;
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    font-family: var(--font-main);
+    font-size: 12.5px;
+    background: #fff;
+    outline: none;
+    resize: none;
+    min-height: 38px;
+    max-height: 100px;
+    color: #1c1c1e;
+    transition: border-color 0.15s;
+    line-height: 1.5;
+  }
+
+  .insight-field:focus { border-color: var(--accent); }
+  .insight-field::placeholder { color: #bbb; }
+  .insight-field:disabled { background: #f5f5f5; color: #ccc; cursor: not-allowed; }
+  .insight-field:disabled::placeholder { color: #ccc; }
+
+  .insight-send-btn:disabled { background: #ccc; cursor: not-allowed; }
+
+  .insight-send-btn {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    background: #1c1c1e;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    flex-shrink: 0;
+    transition: background 0.15s;
+  }
+
+  .insight-send-btn:hover { background: #333; }
+
+  /* Empty state */
+  .empty-insights {
+    text-align: center;
+    padding: 30px 16px;
+    color: #bbb;
+    font-size: 12px;
+    line-height: 1.7;
+  }
+
+  .empty-insights svg {
+    width: 32px;
+    height: 32px;
+    color: #ddd;
+    margin-bottom: 10px;
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- LEFT SIDEBAR: 20% -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <h1>Ethnography<br>Assistant</h1>
+    </div>
+
+    <nav class="nav-section">
+      <div class="nav-label">Navigate</div>
+
+      <div class="nav-item active" onclick="setActive(this)">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+        Home
+      </div>
+
+      <div class="nav-item active-chat" onclick="setActive(this)">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+        Chat
+      </div>
+
+      <div class="nav-item" onclick="setActive(this)">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3"/></svg>
+        Settings
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="privacy-note">
+        <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+        No data is stored. This session exists only in memory.
+      </div>
+    </div>
+  </aside>
+
+  <!-- CENTER CHAT: ~60% (remaining) -->
+  <main class="chat-panel">
+    <div class="chat-header">
+      <h2>Chat</h2>
+      <span class="status-dot">Connected</span>
+    </div>
+
+    <div class="messages" id="messages">
+      <div class="message user">
+        <div class="message-label">You</div>
+        <div class="bubble">I've been feeling overwhelmed lately with work and it's affecting my sleep.</div>
+      </div>
+      <div class="message ai">
+        <div class="message-label">AI</div>
+        <div class="bubble highlight">That sounds really exhausting. When you say overwhelmed — is it more about the volume of tasks, or the pressure around expectations?</div>
+      </div>
+      <div class="message user">
+        <div class="message-label">You</div>
+        <div class="bubble">Both I think. I keep waking up at 3am running through my to-do list.</div>
+      </div>
+      <div class="message ai">
+        <div class="message-label">AI</div>
+        <div class="bubble">The 3am spiral is really common when your nervous system doesn't have a chance to decompress. Have you noticed anything that helps you wind down before bed, even slightly?</div>
+      </div>
+    </div>
+
+    <div class="chat-input-area">
+      <div class="input-row">
+        <textarea class="input-field" id="userInput" placeholder="Type a message..." rows="1" oninput="autoResize(this)" onkeydown="handleKey(event)"></textarea>
+        <button class="btn-send" onclick="sendMessage()">Send</button>
+        <button class="btn-voice" title="Voice input">
+          <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/></svg>
+        </button>
+      </div>
+      <div class="action-row">
+        <button class="btn-action" onclick="generateSummary()">Generate Summary</button>
+        <button class="btn-action danger" onclick="endChat()">End Chat</button>
+        <button class="btn-action" onclick="newChat()" style="margin-left:auto; background:#1c1c1e; color:#fff; border-color:#1c1c1e;">New Chat</button>
+      </div>
+    </div>
+  </main>
+
+  <!-- RIGHT SUMMARY PANEL: 20% -->
+  <aside class="summary-panel">
+    <div class="summary-header">
+      <h2>Summary</h2>
+    </div>
+
+    <!-- Options box top right -->
+    <div class="options-box">
+      <div class="options-box-header">Options</div>
+      <div class="option-item" onclick="generateInsights()">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+        Generate Insights
+      </div>
+      <div class="option-item">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+        Export Summary
+      </div>
+      <div class="option-item" onclick="newChat()">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+        Clear &amp; Reset
+      </div>
+    </div>
+
+    <div class="insights-area" id="insightsArea">
+      <div class="empty-insights" id="emptyState">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+        <p>Generate insights to see patterns and themes from your conversation.</p>
+      </div>
+
+      <div id="insightsContent" style="display:none">
+        <div class="insight-section">
+          <h3>Key Insights</h3>
+          <div class="insight-card">Work-related stress is disrupting sleep through late-night rumination</div>
+          <div class="insight-card">Both task volume and performance expectations are contributing factors</div>
+        </div>
+        <div class="insight-section">
+          <h3>Themes</h3>
+          <div class="insight-card">Overwhelm & burnout patterns</div>
+          <div class="insight-card">Sleep disruption cycle</div>
+        </div>
+        <div class="insight-section">
+          <h3>Emotional Tone</h3>
+          <div>
+            <span class="tag stressed">Stressed</span>
+            <span class="tag reflective">Reflective</span>
+            <span class="tag hopeful">Seeking relief</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="insight-input-area" id="insightInputArea">
+      <div class="insight-input-row">
+        <textarea class="insight-field" id="insightInput" placeholder="Chat..." rows="1" disabled oninput="autoResizeInsight(this)" onkeydown="handleInsightKey(event)"></textarea>
+        <button class="insight-send-btn" id="insightSendBtn" onclick="askInsight()" title="Ask" disabled>
+          <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
+      </div>
+    </div>
+  </aside>
+
+</div>
+
+<script>
+  function setActive(el) {
+    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+    el.classList.add('active');
+  }
+
+  function autoResize(el) {
+    el.style.height = 'auto';
+    el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+  }
+
+  function handleKey(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  }
+
+  function sendMessage() {
+    const input = document.getElementById('userInput');
+    const text = input.value.trim();
+    if (!text) return;
+
+    const messages = document.getElementById('messages');
+    const userMsg = document.createElement('div');
+    userMsg.className = 'message user';
+    userMsg.innerHTML = `<div class="message-label">You</div><div class="bubble">${text}</div>`;
+    messages.appendChild(userMsg);
+    input.value = '';
+    input.style.height = 'auto';
+    messages.scrollTop = messages.scrollHeight;
+  }
+
+  function autoResizeInsight(el) {
+    el.style.height = 'auto';
+    el.style.height = Math.min(el.scrollHeight, 100) + 'px';
+  }
+
+  function handleInsightKey(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      askInsight();
+    }
+  }
+
+  function askInsight() {
+    const input = document.getElementById('insightInput');
+    const text = input.value.trim();
+    if (!text) return;
+    input.value = '';
+    input.style.height = 'auto';
+  }
+
+  function generateInsights() {
+    document.getElementById('emptyState').style.display = 'none';
+    document.getElementById('insightsContent').style.display = 'block';
+    // Unlock the chat input
+    const field = document.getElementById('insightInput');
+    const btn = document.getElementById('insightSendBtn');
+    field.disabled = false;
+    btn.disabled = false;
+    field.placeholder = 'Chat...';
+    field.focus();
+  }
+
+  function generateSummary() {
+    generateInsights();
+  }
+
+  function endChat() {
+    if (confirm('End this session?')) {
+      document.getElementById('messages').innerHTML = '<div style="text-align:center;padding:40px;color:#bbb;font-size:13px;">Session ended.</div>';
+    }
+  }
+
+  function newChat() {
+    document.getElementById('messages').innerHTML = '';
+    document.getElementById('emptyState').style.display = 'block';
+    document.getElementById('insightsContent').style.display = 'none';
+    const field = document.getElementById('insightInput');
+    const btn = document.getElementById('insightSendBtn');
+    field.disabled = true;
+    btn.disabled = true;
+    field.value = '';
+    field.style.height = 'auto';
+  }
+</script>
+</body>
+</html>
