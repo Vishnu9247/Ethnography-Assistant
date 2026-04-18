@@ -19,38 +19,14 @@ langchain-community           # Ollama LLM + tool integrations for LangChain
 langchain-ollama              # Official Ollama integration for LangChain
 langchain-core                # Base abstractions (chains, prompts, messages)
 langgraph                     # Multi-agent graph orchestration (LangChain)
+openpyxl
 
 
-# ──────────────────────────────────────────────────────────
-# Agent Frameworks (pick one or use both)
-# ──────────────────────────────────────────────────────────
-crewai                        # Role-based multi-agent framework
-crewai-tools                  # Built-in tools for CrewAI agents
 
 
-# ──────────────────────────────────────────────────────────
-# Audio Recording
-# ──────────────────────────────────────────────────────────
-pyaudio                       # Microphone input / audio stream
-sounddevice                   # Alternative to pyaudio (easier install on Windows)
-soundfile                     # Read/write audio files (WAV, FLAC, OGG)
-pydub                         # Audio format conversion (mp3 → wav etc.)
-realtimestt                   # Real-time mic → text streaming wrapper (uses Whisper)
 
 
-# ──────────────────────────────────────────────────────────
-# Speech-to-Text (Whisper)
-# ──────────────────────────────────────────────────────────
-faster-whisper                # Fast local Whisper inference (CTranslate2 backend)
-openai-whisper                # Original OpenAI Whisper (fallback / comparison)
-ctranslate2                   # Required backend for faster-whisper
 
-
-# ──────────────────────────────────────────────────────────
-# Speaker Diarization (who said what)
-# ──────────────────────────────────────────────────────────
-pyannote.audio                # Speaker diarization + segmentation
-pyannote.core                 # Core data structures for pyannote
 
 
 # ──────────────────────────────────────────────────────────
@@ -61,24 +37,8 @@ sentence-transformers         # Embedding models (used by ChromaDB + LangChain)
 faiss-cpu                     # Facebook FAISS — alternative flat vector store
 
 
-# ──────────────────────────────────────────────────────────
-# Graph Memory (entity + relationship tracking)
-# ──────────────────────────────────────────────────────────
-networkx                      # In-process graph (entities, topics, relationships)
-neo4j                         # Neo4j Python driver (if using full graph DB server)
-langchain-neo4j               # LangChain integration for Neo4j graph memory
 
 
-# ──────────────────────────────────────────────────────────
-# NLP & Text Analysis (Response Understanding Agents)
-# ──────────────────────────────────────────────────────────
-spacy                         # NLP: entity extraction, dependency parsing
-transformers                  # HuggingFace models (sentiment, NER, classification)
-torch                         # PyTorch — required by transformers + pyannote
-torchaudio                    # Audio tensor ops (required by pyannote.audio)
-nltk                          # Tokenization, stopwords, basic NLP utilities
-textblob                      # Simple sentiment analysis
-vaderSentiment                # Rule-based sentiment (fast, no model needed)
 
 
 # ──────────────────────────────────────────────────────────
@@ -91,25 +51,7 @@ unstructured                  # General document loader (PDF, HTML, DOCX, etc.)
 tiktoken                      # Token counting for context window management
 
 
-# ──────────────────────────────────────────────────────────
-# API Backend (FastAPI — Python-side of the backend)
-# ──────────────────────────────────────────────────────────
-fastapi                       # REST API framework
-uvicorn[standard]             # ASGI server to run FastAPI
-websockets                    # WebSocket support (real-time interview streaming)
-python-multipart              # File upload support (audio file uploads)
-httpx                         # Async HTTP client (call Ollama REST API directly)
-pydantic                      # Data validation and settings management
-pydantic-settings             # .env file config loading
 
-
-# ──────────────────────────────────────────────────────────
-# Data & Storage
-# ──────────────────────────────────────────────────────────
-sqlalchemy                    # ORM for session/transcript storage (optional)
-aiosqlite                     # Async SQLite (lightweight session store)
-redis                         # Redis client (optional: fast shared agent state)
-python-dotenv                 # Load .env config files
 
 
 # ──────────────────────────────────────────────────────────
@@ -124,10 +66,3 @@ rich                          # Pretty terminal output for debugging
 python-dateutil               # Date parsing utilities
 
 
-# ──────────────────────────────────────────────────────────
-# Testing
-# ──────────────────────────────────────────────────────────
-pytest                        # Test runner
-pytest-asyncio                # Async test support (for FastAPI + LangGraph)
-pytest-mock                   # Mocking for unit tests
-httpx                         # Also used to test FastAPI endpoints
