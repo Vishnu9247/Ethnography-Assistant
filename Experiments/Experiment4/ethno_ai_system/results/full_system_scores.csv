@@ -1,0 +1,2 @@
+row,name,agent1_problem_completeness,agent1_clarification_turns,agent1_accuracy_vs_excel,agent2_domain_coverage,agent2_redundant_questions,agent2_depth_score,agent2_relevance_score,agent3_recommendation_relevance,agent3_similarity_vs_expected_solution,agent3_explainability_score,full_system_average_score
+1,Maria Santos,0.933,2.0,0.14,0.75,0.0,1.0,0.098,0.346,0.309,1.0,0.658
