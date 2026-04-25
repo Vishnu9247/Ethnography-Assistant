@@ -100,6 +100,7 @@ def run_session(row_number: int, cleanup: bool = True) -> SessionState:
     }
 
     final_state = graph.invoke(state)
+    final_state["persona_history"] = final_state["persona_agent"].history
 
     if cleanup:
         delete_session(session_id)

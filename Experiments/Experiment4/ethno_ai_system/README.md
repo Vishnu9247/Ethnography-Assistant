@@ -101,6 +101,9 @@ The evaluation scripts create:
 - `results/agent2_scores.csv`
 - `results/agent3_scores.csv`
 - `results/full_system_scores.csv`
+- `results/conversations/row_<n>_<persona>.json`
+- `results/reports/row_<n>_<persona>_report.txt`
+- `results/full_system_conversations.jsonl`
 - `results/plots/summary_metrics.png`
 - `results/plots/rowwise_performance.png`
 

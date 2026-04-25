@@ -18,6 +18,7 @@ if str(PROJECT_ROOT) not in sys.path:
 from config import RESULTS_DIR, ensure_directories
 from evaluation.metrics import score_agent1, score_agent2, score_agent3, score_full_system
 from evaluation.plots import create_plots
+from evaluation.results_writer import save_session_artifacts
 from main import format_session_report, run_session
 from utils.excel_loader import get_all_personas
 
@@ -40,6 +41,7 @@ def evaluate_row(row_number: int) -> Dict[str, float]:
         **full_scores,
     }
     state["scores"] = final_scores
+    save_session_artifacts(state)
 
     print(format_session_report(state))
     return final_scores
