@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+
+# Local environment
+.env
+
+# Runtime artifacts
+ethno_ai_system/logs/
+ethno_ai_system/results/
+ethno_ai_system/chroma_store/
+
+# OS/editor noise
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
